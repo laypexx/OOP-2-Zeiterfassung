@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Klasse, welche Funktionen und Methoden für Abteilungen beinhaltet
@@ -25,20 +26,27 @@ public class AbteilungService implements IAbteilungService {
     @Override
     public Abteilung erstelleAbteilung(final String name, final Boolean isHr, final Mitarbeiter leitenderMitarbeiter) {
         if (name.isBlank() || leitenderMitarbeiter == null || isHr == null) {
-            throw new IllegalArgumentException();
-        }
+            throw new IllegalArgumentException(); //hier was mitgeben wie "Attribute unausreichend
+        }                                           // Abteilung kann nicht erstellt werden"
 
+        //TODO das hier kracht schon in der Anweisung, mach nen Optional<Abteilung> draus und prüf dann isPresent()
         if (abteilungRepository.findByName(name) != null) {
             log.error("Abteilung mit dem Namen: '%s' existiert bereits".formatted(name));
             return null;
         }
 
+        //unschön, lieber Abteilung abteilung = new Abteilung(..)
         var abteilung = new Abteilung(name, isHr, leitenderMitarbeiter);
 
+        //das repo schmeißt nachm save immer das gespeicherte objekt zurück kannst dir also die
+        // letzte zeile klemmen und das return vor den repo aufruf schreiben
         abteilungRepository.save(abteilung);
         return abteilung;
     }
 
+    //TODO mit Objekten direkt überreichen, dann Änderungen vornehmen und persistieren wäre ich vorsichtig
+    //TODO übergib lieber die id und ziehs dir neu ausm repo sonst könntest du hier
+    // mal ne detached Entity to persist exception kriegen
     @Override
     public Abteilung bearbeiteAbteilung(
             Abteilung abteilung,
@@ -55,10 +63,13 @@ public class AbteilungService implements IAbteilungService {
         if (leitenderMitarbeiter != null)
             abteilung.setLeitenderMitarbeiter(leitenderMitarbeiter);
 
+        //siehe Zeile41
         abteilungRepository.save(abteilung);
         return abteilung;
     }
 
+    //TODO hier das gleiche übergib die ID und ermittle Abteilung durch repo bzw schreib dir ne
+    // kleine hilfsmethode "getAbteilungById(final Long id)"
     @Override
     public void loescheAbteilung(final Abteilung abteilung) {
         if (abteilung == null) {
@@ -70,7 +81,8 @@ public class AbteilungService implements IAbteilungService {
 
     @Override
     public List<Abteilung> findeAlle() {
-        var abteilungen = new ArrayList<Abteilung>();
+        //TODO mach das in python hier wird gefällig ordentlich deklariert!
+        var abteilungen = new ArrayList<Abteilung>(); // List<Abteilungen> abteilungen = new ArrayList<Abteilungen>(); !!!!!
         abteilungRepository.findAll().forEach(abteilungen::add);
         return abteilungen;
     }
@@ -87,6 +99,7 @@ public class AbteilungService implements IAbteilungService {
             throw new IllegalArgumentException();
         }
 
+        //TODO ... Z84, Z32
         var abteilung = abteilungRepository.findByName(name);
 
         if (abteilung == null) {
